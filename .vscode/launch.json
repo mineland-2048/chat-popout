@@ -10,6 +10,16 @@
             "request": "launch",
             "reAttach": true,
             "url": "https://web.whatsapp.com",
+            "skipFiles": ["http**"],
+            "addonPath": "${workspaceFolder}/source"
+        },
+        {
+            "name": "Launch mockup with ext",
+            "type": "firefox",
+            "request": "launch",
+            "reAttach": true,
+            "url": "http://127.0.0.1:5500/mockup/whatsapp/whatsapp.html",
+            "skipFiles": ["http**"],
             "addonPath": "${workspaceFolder}/source"
         },
         {

@@ -11,10 +11,9 @@
 
     "content_scripts": [
         {
-            "matches": ["*://web.whatsapp.com/*"],
+            "matches": ["*://web.whatsapp.com/*", "*://127.0.0.1/*"],
             "js": ["popout.js"]
         }
-
     ],
 
     "icons": {

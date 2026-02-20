@@ -1,4 +1,4 @@
-/*  This is for whatsapp web. Should probably learn how to insert css into those specifically */
+/*  Last updated 2026-02-19 */
  
 @keyframes slide-in {
     from {            
@@ -37,18 +37,14 @@
 }
 
 
-.popToggleButton {
-    cursor: pointer;
-
-    span {
-        display: flex;
-        align-items: center;
-        justify-items: center;
-    }
+.pop-toggle-button {
+    /* cursor: cell !important; */
+    /* background: blue !important; */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.popIconOn { display: none; }
-.popIconOff { display: initial; }
 
 html[playAnim="animPopin"] {
     animation: pop-in 200ms ease;
@@ -59,14 +55,11 @@ html[playAnim="animPopout"] {
 }
 
 
-html[chat-popped='true'] {
+html[chat-popup-enabled='true'] {
     animation: pop-in 200ms ease;
 
-
+ 
     
-    .popIconOn { display: initial; }
-    .popIconOff { display: none; }
-
     body {
         #parentElement > div > * {
             max-width: none;
@@ -318,7 +311,7 @@ html[chat-popped='true'] {
     }
 }
 
-html[chat-popped="false"] {
+html[chat-popup-enabled="false"] {
     animation: pop-out 200ms ease;
     .something { display: none;}
     .backButton {

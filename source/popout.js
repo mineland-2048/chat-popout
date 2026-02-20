@@ -13,21 +13,416 @@
 // this is the main script for the extension. The documentation should be done better, but eh, im pretty new to this.
 
 
-/**
- *  A <style> element for the popCSS since having a variable be the innerHTML of an element is not fun (?)
- *  Insert this element at the start once its been filled in with the desired css in its innerHTML
-*/
-// const styleElement = document.createElement("style");
-const styleLink = document.createElement("link")
-let siteURL = window.location.host; // "web.whatsapp.com", "discord.com"
-let website = "siteURL";
+// Set every website either down here or in separate files
+// Plans: messenger, discord, idk what else
+// Discord actually has an ok mobile ui. Know this because of MS Edge having ok compat with it.
+// Whatsapp was the main annoyance i had, which was the primary reason for the creation of this extension.
+// If anyone wants to expand this, go for it. But beware of the jank.
 
+
+const ID = {
+    STYLE_ID: "chat-popup-style",
+    CHAT_POPUP_LOADING: "chat-popup-loading",
+    CHAT_POPUP_ENABLED: "chat-popup-enabled",
+    CHAT_POPUP_AREA: "chat-popup-area",
+    ELEMENT: "chat-popup-element",
+}
+
+
+const LOAD_STATE = {
+    initializing: "initializing",
+    loading: "loading",
+    loaded: "loaded",
+    unloading: "unloading"
+}
+
+
+
+const AREA = {
+    chat: "chat",
+    menu: "menu",
+    settings: "settings"
+}
+
+
+
+class PopupWebsite {
+    url;
+    name;
+    styleLink;
+
+
+    popToggleButton;
+
+    constructor(url, name, cssPath) {
+        this.url = url;
+        this.name = name;
+        this.cssPath = cssPath;
+
+        this.styleLink = document.createElement("link")
+        this.styleLink.type = "text/css";
+        this.styleLink.rel = "stylesheet";
+        this.styleLink.href = browser.runtime.getURL(cssPath);
+        this.styleLink.id = ID.STYLE_ID
+    }
+    
+    /**
+     * Initializes the website. This should always be supered.
+     * 
+     * The base method is used to append the style
+     * @returns
+     */
+    initialize() {
+        document.head.appendChild(this.styleLink);
+    }
+
+    /**
+     * Called when the site is loaded
+     * This should be per site, since they can have loading animations
+     * that interfere with stuff.
+     */
+    onLoaded() {
+        document.documentElement.setAttribute(ID.CHAT_POPUP_ENABLED, true)
+        console.info("Chat popup has been loaded on " + this.name)
+    }
+
+    cleanUp() {
+        if (this.styleLink) 
+            this.styleLink.remove();
+        let styleLink = document.getElementById(ID.STYLE_ID)
+        if (styleLink) styleLink.remove();
+    }
+
+
+    /**
+     * Create the popup button (This is the fallback method)
+     */
+    createPopButton(elementType = "button", color = "red") {
+        let div = document.createElement(elementType)
+        let imgOn = generateIconOn(color);
+        let imgOff = generateIconOff(color);
+
+        imgOn.hidden = this.isPopped()
+        imgOff.hidden = !this.isPopped()
+        
+
+        div.appendChild(imgOn)
+        div.appendChild(imgOff)
+
+        div.setAttribute(ID.ELEMENT, "true")
+        div.classList.add("chat-popup", "pop-toggle-button")
+        return div
+    }
+
+    togglePopped() {
+        document.documentElement.setAttribute(ID.CHAT_POPUP_ENABLED, !this.isPopped());
+        document.querySelectorAll(".chat-popup.icon-on").forEach(e => e.hidden = this.isPopped())
+        document.querySelectorAll(".chat-popup.icon-off, .chat-popup.icon-back").forEach(e => e.hidden = !this.isPopped())
+    }
+
+    /**
+     * Checks if the site is popped or not
+     * @returns bool
+     */
+    isPopped() {
+        return (document.documentElement.getAttribute(ID.CHAT_POPUP_ENABLED) == "true") 
+    }
+
+
+    /**
+     * Enters the chat
+     */
+    enterChat() {
+        document.documentElement.setAttribute(ID.CHAT_POPUP_AREA, AREA.chat)
+    }
+
+    /**
+     * Exits the chat
+     */
+    exitChat() {
+        document.documentElement.setAttribute(ID.CHAT_POPUP_AREA, AREA.menu)
+    }
+
+
+    unload() {
+
+    }
+
+}
+
+
+class PopupWhatsapp extends PopupWebsite {
+
+    _signatures = {
+        "app": "#app",
+        "main_element": "#app .app-wrapper-web > div > .two",
+        "chat": ".app-wrapper-web > div > .two div#main",
+        "sidebar": ".app-wrapper-web > div > .two > header",
+        "contacts": ".two div._aigw:nth-child(5)",
+        "contacts_rows": "div#pane-side > div > div",
+        "contacts_top_buttons": ".two div._aigw:nth-child(5) header span.x1okw0bk > div",
+        "chat_container": ".app-wrapper-web > div > .two > div:nth-last-child(3)",
+        "context_menu_popup": "._aiwn > span:nth-child(8)",
+        
+    }
+
+    
+    _elements = {};
+
+    
+
+    constructor() {
+        // super("https://web.whatsapp.com", "whatsapp", "css/chat-popup-whatsapp.css");
+        super("https://web.whatsapp.com", "whatsapp", ""); 
+    }
+
+    initialize() {
+        super.initialize();
+
+        if (this._whatsapp_page_loaded()) {
+            this.onLoaded()
+            return
+        }
+
+        let mutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+        let target = document.documentElement;
+        const config = { attributes: true, attributeFilter: ["class"] };
+
+        const callback = (mutationList, observer) => {
+                if (this._whatsapp_page_loaded()) {
+                    observer.disconnect();
+                    this.onLoaded()
+                }
+            }
+        
+
+        const observer = new mutationObserver(callback);
+        observer.observe(target, config);
+
+
+    }
+
+    _whatsapp_page_loaded() {
+        return document.documentElement.classList.contains("wf-loading")
+    }
+
+
+    onLoaded() {
+        // TODO: Store popup state in local storage.
+        document.documentElement.setAttribute(ID.CHAT_POPUP_ENABLED, true)
+        
+        this._whatsapp_fingerprinting();
+
+        this._whatsapp_setObservers();
+
+
+        let adjacentSpan = document.querySelector(this._signatures.contacts_top_buttons + " > div > span")
+        let adjacentButton = adjacentSpan.querySelector("button")
+
+        let div = document.createElement("div")
+        let span = document.createElement("span")
+        let popupButton = this.createPopButton()
+
+        popupButton.addEventListener("click", () => this.togglePopped())
+        popupButton.className += " " + (adjacentButton.classList.value)
+
+        span.className = adjacentSpan.classList
+
+        span.appendChild(popupButton)
+        
+        div.appendChild(span)
+        
+        div.setAttribute("chat-popup-element", "")
+        
+        
+        
+
+
+        
+
+        this._elements.contacts_top_buttons.appendChild(div)
+
+
+        console.log(popupButton)
+        
+        
+
+        
+        document.documentElement.setAttribute(ID.CHAT_POPUP_LOADING, LOAD_STATE.loaded)
+
+        alert("loaded!")
+
+    }
+
+    _whatsapp_observers = {
+        chat_observer: {
+            observer: null,
+            element: "chat_container",
+            config: { childList: true, subtree: false },
+            callback: (mutationList, observer) => {
+
+                let has_chat = document.querySelector(this._signatures.chat) !== null
+
+                let area = document.documentElement.getAttribute(ID.CHAT_POPUP_AREA)
+
+                if (has_chat) {
+                    console.log("Entered chat")
+                    this.enterChat()
+                    // area = AREA.chat
+                } else {
+                    console.log("Exited chat")
+                    this.exitChat()
+                    // area = AREA.menu
+                }
+
+                document.documentElement.setAttribute(ID.CHAT_POPUP_AREA, area);
+            }
+        }
+    }
+
+
+    _whatsapp_setObservers() {
+        let mutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+
+        for (key in this._whatsapp_observers) {
+            let obj = this._whatsapp_observers[key]
+
+            let observer = new mutationObserver(obj.callback, obj.config);
+
+            obj.observer = observer;
+            observer.observe(this._elements[obj.element], obj.config);
+        }
+
+
+        console.info("Set observers!", this._whatsapp_observers)
+
+
+    }
+
+
+
+    _whatsapp_fingerprinting() {
+        let _signatures = this._signatures
+        for (key in _signatures) {
+            let element = document.querySelector(_signatures[key]);
+            
+            if (!element){
+                console.warn("Element not found: " + key, _signatures[key])
+                this._elements[key] = null
+                continue
+            }
+            
+            this._elements[key] = element
+            element.setAttribute("chat-popup-id", key);
+        }
+
+        console.log("Fingerprinted elements", this._elements)
+    }
+
+    cleanUp() {
+        super.cleanUp();
+        for (key in this._elements) {
+            this._elements[key].removeAttribute("chat-popup-id")
+        }
+
+        // for (key in this._whatsapp_observers) {
+        //     let observer = this._whatsapp_observers[key].observer
+        //     if (observer) {
+        //         observer.disconnect();
+
+        //     }
+        // }
+    }
+}
+
+
+class PopupMockup extends PopupWebsite {
+    constructor() {
+        super("http://127.0.0.1:5500", "Mockup", "css/mockupSite.css")
+    }
+
+
+    initialize() {
+        super.initialize()
+
+
+        this.onLoaded()
+        // console.log(popupButton)
+
+    }
+
+
+    onLoaded() {
+        super.onLoaded()
+
+        let header = document.querySelector(".mainUI header")
+        let popupButton = this.createPopButton();
+        header.appendChild(popupButton)
+
+        this.popupButton = popupButton
+        this.popupButton.addEventListener("click", () => this.togglePopped())
+
+        
+        console.info("Chat popup has been loaded on " + this.name)
+
+    }
+
+
+}
+
+
+const ICONS = {
+    iconOn:   { file: browser.runtime.getURL("icons/half.svg"), svg: "", element: null},
+    iconOff:  { file: browser.runtime.getURL("icons/full.svg"), svg: "", element: null},
+    iconBack: { file: browser.runtime.getURL("icons/back.svg"), svg: "", element: null},
+}
+
+async function _setupIcons() {
+    // console.log(FILES.IMG_FULL)
+    
+
+    for (key in ICONS) {
+        let icon = ICONS[key];
+
+
+        await fetch(icon.file)
+        .then(response => response.text())
+        .then(text => {
+            icon.svg = text
+            let h  = document.createElement("svg")
+            h.innerHTML = text
+            icon.element = h
+        })
+
+    }
+
+
+
+
+    
+
+
+
+
+
+}
+
+
+let site;
+
+// const styleLink = document.createElement("link")
+
+
+let SITES = {
+    "web.whatsapp.com": new PopupWhatsapp(),
+    "127.0.0.1:5500": new PopupMockup(),
+}
 
 /**
  * Checks for which site this is on and assigns the specified function to run
  * @returns 
 */
-function startExtension() {
+function startExtensionOld() {
     // console.log(siteURL)
 
     /**
@@ -55,7 +450,54 @@ function startExtension() {
     startTheThing();
 }
 
-startExtension();
+
+function cleanUp() {
+    let cleaned = false;
+    document.documentElement.removeAttribute(ID.CHAT_POPUP_LOADING)
+    document.documentElement.removeAttribute(ID.CHAT_POPUP_ENABLED)
+    document.documentElement.removeAttribute(ID.CHAT_POPUP_AREA)
+    if (document.getElementById(ID.STYLE_ID)) {
+        document.getElementById(ID.STYLE_ID).remove()
+        cleaned = true
+    }
+    document.querySelectorAll(`.popToggleButton, [${ID.ELEMENT}]`).forEach(e => e.remove());
+
+    site.cleanUp();
+
+    if (cleaned) {
+        console.info("Chat popup has been cleaned up")
+    }
+}
+
+async function startExtension() {
+    document.documentElement.setAttribute(ID.CHAT_POPUP_LOADING, LOAD_STATE.initializing)
+    
+    
+    let siteURL = window.location.host; // "web.whatsapp.com", "discord.com"
+    
+    site = SITES[siteURL]
+    if (!site) {
+        console.log("Chat-popup not applicable for " + siteURL)
+        return
+    }
+    
+    cleanUp()
+
+    console.log("chat-popup found a valid website!")
+
+    await _setupIcons();
+
+    document.documentElement.setAttribute(ID.CHAT_POPUP_LOADING, LOAD_STATE.loading)
+
+
+    site.initialize()
+    
+    
+
+}
+
+
+startExtension()
 
 ///////////////////////////////
 //                           //
@@ -63,108 +505,47 @@ startExtension();
 //                           //
 ///////////////////////////////
 
-/**
- * Logs that the extension has ben loaded in site
- * @param {string} site The website
- */
-function logReady(site) {
-    if (!site) site =  website; 
-    console.info(`Chat popout has been initialized for ${site}`);
-}
-
-/**
- * Sets all attributes from a list into a specified element
- * @param {HTMLElement} element 
- * @param {Object} list 
- */
-function insertAttributes(element, list) {
-
-    for(const attribute in list) {
-        element.setAttribute(attribute, list[attribute]);
-    }
-
-}
 
 // The on and off icons were made by me and are on /icons 
 // -Andy
+function generateIcon(color, svg, elementType = "span") {
+    // Red if nothing. Should probably put to 'unset'
+    if (!color) color = "#EE0000";
+    
+    let svgParent = document.createElement(elementType);
+
+
+    let svgXml = new DOMParser().parseFromString(svg, "image/svg+xml");
+
+    svgXml.querySelectorAll('[fill="ICONCOLOR"]').forEach(element => {
+        element.setAttribute("fill", color);
+    })
+    // svgParent.add = svgXml.querySelector("svg").outerHTML
+    svgParent.appendChild(svgXml.querySelector("svg"))
+
+    return svgParent
+
+    
+}
 
 /**
- * Returns the On icon as a text form svg.
  * @param {string} color 
  * @returns HTMLElement
  */
 function generateIconOn(color) {
-    if (!color) { color = "#e0e0e0"; }
-    let svgParent = document.createElement("span");
-
-    /* this is the icons/full.svg pasted in because color is important*/ //xml
-    svgParent.innerHTML =
-    `<svg
-    class="popIconOn" 
-    width="5.3469601mm"
-    height="5.3474774mm"
-    viewBox="0 0 5.3469601 5.3474774"
-    version="1.1"
-    id="svg1"
-    xml:space="preserve"
-    xmlns="http://www.w3.org/2000/svg"
-    xmlns:svg="http://www.w3.org/2000/svg"><defs
-      id="defs1" /><g
-      id="layer2"
-      transform="translate(-104.86977,-17.912374)"><g
-        id="g73"><path
-          fill="iconColorHere"
-          d="m 104.86977,17.912373 v 1.428853 l 0.36483,1.244885 -0.36483,1.244886 v 1.428853 h 1.42885 l 1.24488,-0.364836 1.24489,0.364836 h 1.42834 v -1.428853 l -0.36432,-1.244886 0.36432,-1.245402 v -1.428336 h -1.42782 l -1.24541,0.364835 -1.24488,-0.364835 z"
-          style="stroke-width:1.29215;stroke-linecap:round"
-          id="path70" /></g></g></svg>`;
-
-    
-    let svgElement = svgParent.children.item(0);
-    svgElement.querySelector('[fill="iconColorHere"]').setAttribute("fill", color);
-
-
-    return svgElement;
+    let icon = generateIcon(color, ICONS.iconOn.svg)
+    icon.className = "chat-popup icon-on"
+    return icon
 }
 
 /**
- * Returns the Off icon as a text form svg.
  * @param {string} color 
  * @returns HTMLElement
  */
 function generateIconOff(color) {
-        
-    if (!color) { color = "#e0e0e0"; }
-    let svgParent = document.createElement("span");
-
-    /* this is the icons/full.svg pasted in because color is important*/ //xml
-    svgParent.innerHTML =  
-    `<svg
-    class="popIconOff" 
-    width="5.3469524mm"
-    height="5.3474774mm"
-    viewBox="0 0 5.3469524 5.3474774"
-    version="1.1"
-    id="svg1"
-    xml:space="preserve"
-    xmlns="http://www.w3.org/2000/svg"
-    xmlns:svg="http://www.w3.org/2000/svg"><defs
-      id="defs1" /><g
-      id="layer2"
-      transform="translate(-90.993059,-18.104839)"><g
-        id="g74"
-        transform="translate(3.0454413,7.8273318)"
-        style="display:inline"><path
-          fill="iconColorHere"
-          d="m 87.947612,10.277506 v 1.428853 l 0.36484,1.244886 -0.36484,1.244885 v 1.428853 h 1.42885 l 1.24489,-0.364835 1.24488,0.364835 h 1.42834 V 14.19613 l -0.36432,-1.244885 0.36432,-1.245402 v -1.428337 h -1.42782 l -1.2454,0.364836 -1.24489,-0.364836 z m 0.56224,0.56224 h 1.1281 l 0.41547,0.121439 0.002,3.979086 -0.41703,0.122473 h -1.12809 V 13.93413 l 0.28783,-0.982885 -0.28783,-0.982886 z"
-          style="stroke:none;stroke-width:1.29215;stroke-linecap:round;stroke-opacity:1"
-          id="path72" /></g></g></svg>`;
-
-    let svgElement = svgParent.children.item(0);
-
-    svgElement.querySelector('[fill="iconColorHere"]').setAttribute("fill", color);
-      
-    return svgElement;
-    
+    let icon = generateIcon(color, ICONS.iconOff.svg)
+    icon.className = "chat-popup icon-off"
+    return icon
 }
 
 /**
@@ -173,31 +554,21 @@ function generateIconOff(color) {
  * @returns Element
  */
 function generateIconBack(color) {
-    const button = document.createElement("div");
+    let icon = generateIcon(color, ICONS.iconBack.svg)
+    icon.className = "chat-popup icon-back"
+    return icon
 
-    if (!color) color = "currentcolor";
-
-    button.innerHTML = //html
-    `<svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" class="" version="1.1" x="0px" y="0px" enable-background="new 0 0 24 24">
-        <path fill="${color}" d="M12,4l1.4,1.4L7.8,11H20v2H7.8l5.6,5.6L12,20l-8-8L12,4z"></path>
-    </svg>`;
-
-
-    let icon = button.children.item(0);
-
-    return icon;
 }
 
 /**
  * Toggles the popped out style for the current website.
  */
 function togglePopped() {
-
-    let mode = document.documentElement.getAttribute("chat-popped") == "true" ? "false" : "true";
+    let mode = document.documentElement.getAttribute(ID.CHAT_POPUP_ENABLED) == "true" ? false : true;
     // console.info(mode);
 
     
-    document.documentElement.setAttribute("chat-popped", mode);
+    document.documentElement.setAttribute(ID.CHAT_POPUP_ENABLED, mode);
 
 }
 
@@ -206,25 +577,20 @@ function togglePopped() {
  * @returns bool
  */
 function isPopped() {
-    if (document.documentElement.getAttribute("chat-popped") == "true") { return true; }
-    return false;
+    return (document.documentElement.getAttribute("chat-popped") == "true") 
 }
 
 
 
 
-// Set every website either down here or in separate files
-// Plans: messenger, discord, idk what else
-// Discord actually has an ok mobile ui. Know this because of MS Edge having ok compat with it.
-// Whatsapp was the main annoyance i had, which was the primary reason for the creation of this extension.
-// If anyone wants to expand this, go for it. But beware of the jank.
+// LEGACY
 
 
 /**
  * This is the whole engine for Whatsapp Web. You can use this as a guide on how to modify your desired page.
  * Its awful, so beware of the jank.
  */
-function Whatsapp (){
+function Whatsapp () {
 
     let app = document.getElementById("app");
     let parentElement = "";
