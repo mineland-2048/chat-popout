@@ -160,7 +160,8 @@ class PopupWhatsapp extends PopupWebsite {
         "sidebar": ".app-wrapper-web > div > .two > header",
         "contacts": ".two div._aigw:nth-child(5)",
         "contacts_rows": "div#pane-side > div > div",
-        "contacts_top_buttons": ".two div._aigw:nth-child(5) header span.x1okw0bk > div",
+        "contacts_top_buttons": ".two > div._aigw:nth-child(5) header span.x1okw0bk > div",
+        "status_container": ".two > div:nth-child(4)",
         "chat_container": ".app-wrapper-web > div > .two > div:nth-last-child(3)",
         "context_menu_popup": "._aiwn > span:nth-child(8)",
         

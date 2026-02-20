@@ -1,7 +1,18 @@
 /*  Last updated 2026-02-19 */
- 
+/*
+        "app": "#app",
+        "main_element": "#app .app-wrapper-web > div > .two",
+        "chat": ".app-wrapper-web > div > .two div#main",
+        "sidebar": ".app-wrapper-web > div > .two > header",
+        "contacts": ".two div._aigw:nth-child(5)",
+        "contacts_rows": "div#pane-side > div > div",
+        "contacts_top_buttons": ".two div._aigw:nth-child(5) header span.x1okw0bk > div",
+        "chat_container": ".app-wrapper-web > div > .two > div:nth-last-child(3)",
+        "context_menu_popup": "._aiwn > span:nth-child(8)",
+
+*/
 @keyframes slide-in {
-    from {            
+    from {
         transform: translateY(-2vh);
         opacity: 0;
     }
@@ -58,106 +69,116 @@ html[playAnim="animPopout"] {
 html[chat-popup-enabled='true'] {
     animation: pop-in 200ms ease;
 
- 
-    
+
+
     body {
-        #parentElement > div > * {
+        max-height: 100vh;
+    }
+
+    [chat-popup-id="main_element"] {
+        max-height: 100vh;
+        min-height: 0;
+        position: relative;
+
+        > div > * {
             max-width: none;
             width: 100vw;
         }
+    }
 
-        #app > div {
-            /* some pop out windows like change theme */
 
-            /* the wrapper that has a set width */
-            .s4r5ooj2 {
-                min-width: 0;
+    #app > div {
+        /* some pop out windows like change theme */
+        /* the wrapper that has a set width */
+        .s4r5ooj2 {
+            min-width: 0;
+            max-width: 100vw;
+        }
+
+        span:nth-child(3) {
+            /* the popup message and the community pop up window respectively*/
+            .hblzrxh7,
+            .enheoddn {
+                width: 100vw;
                 max-width: 100vw;
-            }
-
-            span:nth-child(3) {
-                /* the popup message and the community pop up window respectively*/
-                .hblzrxh7, .enheoddn {
-                    width: 100vw;
-                    max-width: 100vw;
-                    min-width: 0;
-                }
-
-                .enheoddn {
-                    padding-left: 32px;
-                    padding-right: 32px;
-                }
-
-                /* edit message box */
-                div.gpw48i3y {
-                    max-width: 100vw;
-                }
-
-                > div { z-index: 2000 }
-            }
-
-            /* keyboard shortcuts screen's text box*/
-            .iuhl9who {
-                max-width: 100vw;
-            }
-
-            /* Its inner text content */
-            .nfnc8vpt {
-                max-width: 100vw;
-                width: unset;
                 min-width: 0;
             }
-            
-        
-            > div:nth-last-child(1) {
-                position: absolute;
-                left: 0;
-                top: 0;
+
+            .enheoddn {
+                padding-left: 32px;
+                padding-right: 32px;
+            }
+
+            /* edit message box */
+            div.gpw48i3y {
+                max-width: 100vw;
+            }
+
+            > div {
+                z-index: 2000
+            }
+        }
+
+        /* keyboard shortcuts screen's text box*/
+        .iuhl9who {
+            max-width: 100vw;
+        }
+
+        /* Its inner text content */
+        .nfnc8vpt {
+            max-width: 100vw;
+            width: unset;
+            min-width: 0;
+        }
+
+
+        > div:nth-last-child(1) {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+
+            > div {
+                max-width: 100vw;
+                position: fixed;
+            }
+        }
+
+        /* Status fixes  and fullscreen media view (images)*/
+        > span:nth-child(4) {
+            top: 0;
+            left: 0;
+            /* progress bar */
+            > * {
+                position: fixed;
                 width: 100vw;
                 height: 100vh;
-
-                > div {
-                    max-width: 100vw;
-                    position: fixed;
-                }
+                z-index: 1000;
             }
 
-            /* Status fixes  and fullscreen media view (images)*/
-            > span:nth-child(4) {
-                top: 0;
-                left: 0;
-                /* progress bar */
-                > * {
-                    position: fixed;
-                    width: 100vw;
-                    height: 100vh;
-                    z-index: 1000;
-                }
 
-                
-                
-                
-                /* ITS THE WHOLE PATH BECAUSE REUSED CLASS F- */
-                .bgigc5s4
-                {
-                    max-width: 100vw;
 
-                }
-                /* status specific */
-                .bmhhosgr {
-                    width: unset !important;
-                    max-width: 100vw;
-                }
 
-                /* back arrow and close button which basically do the same thing?*/
-                /* TODO: couple the back arrow and pfp like in the chats thing*/
-                .q177n8ra {
-                    display: none;
-                    top: 55px
-                }
+            /* ITS THE WHOLE PATH BECAUSE REUSED CLASS F- */
+            .bgigc5s4 {
+                max-width: 100vw;
+            }
+            /* status specific */
+            .bmhhosgr {
+                width: unset !important;
+                max-width: 100vw;
+            }
+
+            /* back arrow and close button which basically do the same thing?*/
+            /* TODO: couple the back arrow and pfp like in the chats thing*/
+            .q177n8ra {
+                display: none;
+                top: 55px
             }
         }
     }
+
 
     #pop-menus {
         position: fixed;
@@ -173,8 +194,8 @@ html[chat-popup-enabled='true'] {
         /* the file upload screen */
         > div:nth-last-child(1) div.fhf7t426:nth-child(1) {
             position: fixed;
-            top:0;
-            left:0;
+            top: 0;
+            left: 0;
             width: 100vw;
             height: 100vh;
             min-width: 0;
@@ -193,31 +214,77 @@ html[chat-popup-enabled='true'] {
 
     #main {
         animation: pop-in 200ms ease;
-        max-width: none;
-        min-width: none;
-        max-height: none;
-        min-height: none;
+        max-width: 100vw;
+        min-width: 0;
+        max-height: 100vh;
+        min-height: 0;
         transform-origin: center;
 
         width: 100vw;
         height: 100vh;
-        top: 0vh;
-        left: 0px;
+        top: 0;
+        left: 0;
         z-index: 100;
     }
 
-    #contacts {
-        max-width: none;
-        min-width: none;
-        max-height: none;
-        min-height: none;
+    [chat-popup-id="chat_container"]:has( > section) {
+        display: none;
+    }
+    
+    [chat-popup-id="chat_container"] {
+        position: absolute;
+    }
+    
+    [chat-popup-id="status_container"] {
+        position: absolute;
+        display: flex;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        max-width: 100vw;
+        max-height: 100vh;
+        min-width: 0;
+        z-index: 2;
+        
+        > div:nth-child(1) {
+            margin: 0;
+            flex-grow: 1;
+            height: 100vh;
+            max-height: 100vh !important;
+            max-width: 100vw !important;
+        }
+        > div:nth-last-child(1) {
+            display: none;
+        }
+    }
+
+    [chat-popup-id="contacts"]{
+        
+        max-width: 100vw !important;
+        min-width: 0;
+        max-height: 100vh;
+        min-height: 0;
+        
+        
 
         width: 100vw;
         height: 100vh;
-        bottom: 0px;
+        top: 0px;
         left: 0px;
         z-index: 1;
+    }
 
+    [chat-popup-id="sidebar"] {
+        position: absolute;
+        max-width: none;
+        width: 100%;
+        height: fit-content;
+        bottom: 0;
+        z-index: 10;
+        div {
+            flex-direction: row;
+        }
     }
 
     #parentElement > div {
@@ -229,28 +296,26 @@ html[chat-popup-enabled='true'] {
 
     #info {
         position: fixed;
-        top:0;
+        top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
         overflow: visible;
 
-        transform: translateX(100vw); 
+        transform: translateX(100vw);
 
         > * > * {
             translate: -100vw;
             z-index: 200;
         }
 
-        
+
         /* the media section images*/
         /* > span > div > span > div > div:nth-last-child(1) > span > div > div > div > div > div > div */
-        .d0st09ow
-        {
+        .d0st09ow {
             max-width: 87%;
             --size: 200px;
             width: var(--size);
-
         }
 
         /* the media secion time labels */
@@ -258,7 +323,6 @@ html[chat-popup-enabled='true'] {
             width: 100%;
             margin-left: 2vw;
         }
-
     }
 
     #parentElement::after {
@@ -272,9 +336,9 @@ html[chat-popup-enabled='true'] {
         top: 0;
         left: 0;
         max-width: none;
-        min-width: none;
+        min-width: 0;
         max-height: none;
-        min-height: none;
+        min-height: 0;
     }
 
     #main > header {
@@ -284,14 +348,14 @@ html[chat-popup-enabled='true'] {
 
     .backButton {
         display: flex;
-        flex-direction: columns;
+        flex-direction: column;
         align-items: center;
         pointer-events: initial;
         border-radius: 22px !important;
         margin: 0 !important;
         padding: 2px !important;
         height: 44px;
-        
+
         > div {
             padding: 0 !important;
             margin: 0;
@@ -313,17 +377,19 @@ html[chat-popup-enabled='true'] {
 
 html[chat-popup-enabled="false"] {
     animation: pop-out 200ms ease;
-    .something { display: none;}
+    .something {
+        display: none;
+    }
     .backButton {
         display: flex;
-        flex-direction: columns;
+        flex-direction: column;
         align-items: center;
         pointer-events: none;
 
         > span {
             display: none;
         }
-        
+
         > * {
             pointer-events: initial;
         }
