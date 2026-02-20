@@ -97,7 +97,7 @@ class PopupWebsite {
     /**
      * Create the popup button (This is the fallback method)
      */
-    createPopButton(elementType = "button", color = "red") {
+    createPopButton(elementType = "button", color = "currentColor") {
         let div = document.createElement(elementType)
         let imgOn = generateIconOn(color);
         let imgOff = generateIconOff(color);
@@ -164,6 +164,8 @@ class PopupWhatsapp extends PopupWebsite {
         "status_container": ".two > div:nth-child(4)",
         "chat_container": ".app-wrapper-web > div > .two > div:nth-last-child(3)",
         "context_menu_popup": "._aiwn > span:nth-child(8)",
+        "multimedia_popup": "#app > div > div > span:nth-child(3)",
+        "edit_message_popup": "#app > div > div > span:nth-child(2)",
         
     }
 

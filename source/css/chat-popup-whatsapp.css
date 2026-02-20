@@ -1,4 +1,4 @@
-/*  Last updated 2026-02-19 */
+/*  Last updated 2026-02-20 */
 /*
         "app": "#app",
         "main_element": "#app .app-wrapper-web > div > .two",
@@ -84,18 +84,27 @@ html[chat-popup-enabled='true'] {
             max-width: none;
             width: 100vw;
         }
+        
+        
     }
+    
+    
 
 
-    #app > div {
+    #app > div > div {
         /* some pop out windows like change theme */
         /* the wrapper that has a set width */
-        .s4r5ooj2 {
-            min-width: 0;
+        > span > div > div > div {
             max-width: 100vw;
+            min-width: 0;
+            > div {
+                min-width: 0;
+                max-width: 100vw;
+            }
         }
+        
 
-        span:nth-child(3) {
+        > span:nth-child(3) {
             /* the popup message and the community pop up window respectively*/
             .hblzrxh7,
             .enheoddn {
@@ -132,18 +141,7 @@ html[chat-popup-enabled='true'] {
         }
 
 
-        > div:nth-last-child(1) {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100vw;
-            height: 100vh;
 
-            > div {
-                max-width: 100vw;
-                position: fixed;
-            }
-        }
 
         /* Status fixes  and fullscreen media view (images)*/
         > span:nth-child(4) {
@@ -212,27 +210,37 @@ html[chat-popup-enabled='true'] {
         }
     }
 
-    #main {
-        animation: pop-in 200ms ease;
-        max-width: 100vw;
-        min-width: 0;
-        max-height: 100vh;
-        min-height: 0;
-        transform-origin: center;
 
-        width: 100vw;
-        height: 100vh;
-        top: 0;
-        left: 0;
-        z-index: 100;
-    }
-
+    
+    /* chat container with nothin */
     [chat-popup-id="chat_container"]:has( > section) {
         display: none;
     }
     
     [chat-popup-id="chat_container"] {
         position: absolute;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        max-height: 100vh;
+        min-height: 0;
+        
+        #main {
+            animation: pop-in 200ms ease;
+            max-width: 100vw;
+            min-width: 0;
+            max-height: 100vh;
+            min-height: 0;
+            transform-origin: center;
+
+            width: 100vw;
+            height: calc(100vh);
+            top: 0;
+            left: 0;
+            
+            z-index: 100;
+        }
+
     }
     
     [chat-popup-id="status_container"] {
@@ -245,7 +253,7 @@ html[chat-popup-enabled='true'] {
         max-width: 100vw;
         max-height: 100vh;
         min-width: 0;
-        z-index: 2;
+        z-index: 102;
         
         > div:nth-child(1) {
             margin: 0;
@@ -254,8 +262,14 @@ html[chat-popup-enabled='true'] {
             max-height: 100vh !important;
             max-width: 100vw !important;
         }
+        
+        /* 
+            This is the bloat side view of statuses
+            and also the chat media preview window??????
+        */
         > div:nth-last-child(1) {
-            display: none;
+            position: absolute;
+            z-index: 101;
         }
     }
 
@@ -278,15 +292,82 @@ html[chat-popup-enabled='true'] {
     [chat-popup-id="sidebar"] {
         position: absolute;
         max-width: none;
-        width: 100%;
+        width: 100vw;
         height: fit-content;
         bottom: 0;
-        z-index: 10;
+        z-index: 300;
+        
         div {
             flex-direction: row;
         }
+        
+        /* The sidebar elements have a hover that changes the cursor on empty space. */
+        > div > div {
+            cursor: default;
+        } 
+        
+        /* Right side */
+        > div > div:nth-last-child(1) > div {
+                justify-content: end;
+            
+        }
     }
 
+
+   /* lowers the sidebar index if a chat is visible */
+   #app:has([chat-popup-id="chat_container"] #main) [chat-popup-id="sidebar"] {
+        z-index: 30;
+    } 
+    
+    /* profile inspect column */    
+    [chat-popup-id="main_element"] > div:nth-last-child(2):not(:has(> * > * > *)) {
+        display: none;
+    }
+    
+    [chat-popup-id="main_element"] > div:nth-last-child(2) {
+        position: absolute;
+        left: 0;
+        top: 0;
+        
+        max-width: 100vw;
+        min-width: 0;
+        max-height: 100vh;
+        min-height: 0;
+        
+        width: 100vw;
+        height: 100vh;
+        
+    }
+    
+    
+    
+    #expressions-panel-container {
+        z-index: 300;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        pointer-events: none;
+        
+        > * {
+            pointer-events: fill;
+        }
+        
+        > span > div {
+            /* max-width is set to 560px */
+            left: calc(50vw - 560px/2) !important;
+            
+            @media (width < 560px) {
+                max-width: 100vw;
+                min-width: 0;
+                left: 0 !important;
+                right: 0 !important;
+            }
+        }
+        
+        
+    }
     #parentElement > div {
         max-width: 100vw;
     }
