@@ -66,8 +66,16 @@ class PopupWebsite {
         this.styleLink = document.createElement("link")
         this.styleLink.type = "text/css";
         this.styleLink.rel = "stylesheet";
-        this.styleLink.href = (cssPath);
         this.styleLink.id = ID.STYLE_ID
+        this.styleLink.href = (cssPath);
+
+        // console.log("Trying to get from online: " + cssPath)
+
+        // fetch(cssPath).then(response => response.text).then(text => {
+        //     console.log("Got text", text)
+        // }).catch(e => {
+        //     console.error(e)
+        // })
     }
     
     /**
@@ -178,8 +186,11 @@ class PopupWhatsapp extends PopupWebsite {
     
 
     constructor() {
-        super("https://web.whatsapp.com", "whatsapp", browser.runtime.getURL("css/chat-popup-whatsapp.css"));
-        // super("https://web.whatsapp.com", "whatsapp", ""); 
+        // TODO: make this work by fetching css.
+        // Whatsapp blocks the css from being fetched with just a link,
+        // so there needs to be something else in order for that to work.
+        // super("https://web.whatsapp.com", "whatsapp", "https://raw.githubusercontent.com/mineland-2048/chat-popout/refs/heads/main/sites/whatsapp/chat-popup-whatsapp.css");
+        super("https://web.whatsapp.com", "whatsapp", browser.runtime.getURL("sites/whatsapp/chat-popup-whatsapp.css")); 
     }
 
     initialize() {
@@ -402,8 +413,8 @@ let site;
 
 
 let SITES = {
-    "web.whatsapp.com": new PopupWhatsapp(),
-    "127.0.0.1:5500": new PopupMockup(),
+    "web.whatsapp.com": PopupWhatsapp,
+    "127.0.0.1:5500": PopupMockup,
 }
 
 
@@ -433,7 +444,7 @@ async function startExtension() {
     
     let siteURL = window.location.host; // "web.whatsapp.com", "discord.com"
     
-    site = SITES[siteURL]
+    site = new SITES[siteURL]()
     if (!site) {
         console.log("Chat-popup not applicable for " + siteURL)
         return
@@ -449,10 +460,8 @@ async function startExtension() {
 
 
     site.initialize()
-    
-    
-
 }
+
 
 
 startExtension()
