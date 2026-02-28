@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "chat-popup",
-    "version": "2.1",
+    "version": "3.0-beta1",
 
     "description": "Better chat windows!",
 
@@ -11,7 +11,7 @@
 
     "content_scripts": [
         {
-            "matches": ["*://web.whatsapp.com/*", "*://127.0.0.1/*"],
+            "matches": ["*://web.whatsapp.com/*"],
             "js": ["popout.js"]
         }
     ],
