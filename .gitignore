@@ -1,5 +1,5 @@
-.vscode
-mockup
-archives
+/.vscode/
+/mockup/
+/archives/
 *.*~
 *.bak
