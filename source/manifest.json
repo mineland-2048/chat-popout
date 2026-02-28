@@ -20,7 +20,7 @@
 
     "browser_specific_settings": {
         "gecko": {
-        "id": "@chat-popup",
+        "id": "{9b99f63f-f9d5-4481-907c-3e59fba0b900}",
         "data_collection_permissions": {
             "required": ["none"]
         }
