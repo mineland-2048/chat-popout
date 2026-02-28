@@ -398,6 +398,11 @@ async function _setupIcons() {
         .then(text => {
             icon.svg = text
             let h  = document.createElement("svg")
+
+            // This is the svg element.
+            // Using an img with the src of the svg is no good
+            // since it wont inherit the colors set in the css.
+            // I have no other choice.
             h.innerHTML = text
             icon.element = h
         })
