@@ -95,7 +95,7 @@ class PopupWebsite {
      */
     onLoaded() {
         document.documentElement.setAttribute(ID.CHAT_POPUP_ENABLED, true)
-        console.info("Chat popup has been loaded on " + this.name)
+        // console.debug("Chat popup has been loaded on " + this.name)
     }
 
     cleanUp() {
@@ -255,7 +255,7 @@ class PopupWhatsapp extends PopupWebsite {
         this._elements.contacts_top_buttons.appendChild(div)
 
 
-        console.log(popupButton)
+        // console.log(popupButton)
         
         
 
@@ -278,11 +278,11 @@ class PopupWhatsapp extends PopupWebsite {
                 let area = document.documentElement.getAttribute(ID.CHAT_POPUP_AREA)
 
                 if (has_chat) {
-                    console.log("Entered chat")
+                    // console.log("Entered chat")
                     this.enterChat()
                     // area = AREA.chat
                 } else {
-                    console.log("Exited chat")
+                    // console.log("Exited chat")
                     this.exitChat()
                     // area = AREA.menu
                 }
@@ -317,7 +317,7 @@ class PopupWhatsapp extends PopupWebsite {
             let element = document.querySelector(_signatures[key]);
             
             if (!element){
-                console.warn("Element not found: " + key, _signatures[key])
+                // console.warn("Element not found: " + key, _signatures[key])
                 this._elements[key] = null
                 continue
             }
@@ -326,7 +326,7 @@ class PopupWhatsapp extends PopupWebsite {
             element.setAttribute("chat-popup-id", key);
         }
 
-        console.log("Fingerprinted elements", this._elements)
+        // console.log("Fingerprinted elements", this._elements)
     }
 
     cleanUp() {
@@ -373,7 +373,7 @@ class PopupMockup extends PopupWebsite {
         this.popupButton.addEventListener("click", () => this.togglePopped())
 
         
-        console.info("Chat popup has been loaded on " + this.name)
+        // console.info("Chat popup has been loaded on " + this.name)
 
     }
 
@@ -439,7 +439,7 @@ function cleanUp() {
     site.cleanUp();
 
     if (cleaned) {
-        console.info("Chat popup has been cleaned up")
+        // console.info("Chat popup has been cleaned up")
     }
 }
 
@@ -451,13 +451,13 @@ async function startExtension() {
     
     site = new SITES[siteURL]()
     if (!site) {
-        console.log("Chat-popup not applicable for " + siteURL)
+        // console.log("Chat-popup not applicable for " + siteURL)
         return
     }
     
     cleanUp()
 
-    console.log("chat-popup found a valid website!")
+    // console.debug("chat-popup found a valid website!")
 
     await _setupIcons();
 
